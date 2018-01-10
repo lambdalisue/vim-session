@@ -17,7 +17,7 @@ Interface			|session-interface|
   Functions			|session-functions|
   Variables			|session-variables|
 Cooperation			|session-cooperation|
-  Denite		|	||session-denite|
+  Denite		 	|session-denite|
 Tips				|session-tips|
 
 
@@ -183,16 +183,16 @@ COMMANDS					*session-commands*
 
 	Mode	Mapping		Description~
 	n	<Return>	|:SessionOpen| on a cursor session
-	n	g<Return>	|:SessionOpen!|| on a cursor session
-	n	dd		|:SessionRemove|| on a cursor session
-	v	dd		|:SessionRemove|| on sessions in a selection
+	n	g<Return>	|:SessionOpen!| on a cursor session
+	n	dd		|:SessionRemove| on a cursor session
+	v	dd		|:SessionRemove| on sessions in a selection
 
 	And the following <Plug> mappings
 
 	Modes	Plug mapping			Command~
-	n	<Plug>(session-open)		||:SessionOpen| 
-	n	<Plug>(session-open-force)	||:SessionOpen!|
-	n/v	<Plug>(session-remove)		||:SessionRemove|
+	n	<Plug>(session-open)		|:SessionOpen| 
+	n	<Plug>(session-open-force)	|:SessionOpen!|
+	n/v	<Plug>(session-remove)		|:SessionRemove|
 
 						*:SessionClose*
 :SessionClose
