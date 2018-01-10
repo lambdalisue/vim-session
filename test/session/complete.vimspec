@@ -1,0 +1,64 @@
+Describe session#complete
+  Before all
+    let File = vital#vital#import('System.File')
+    let Path = vital#vital#import('System.Filepath')
+  End
+
+  Describe #opener
+    It returns available openers
+      let candidates = session#complete#opener('', '', [])
+      Assert Equals(candidates, [
+            \ 'edit',
+            \ 'split',
+            \ 'pedit',
+            \ 'vsplit',
+            \ 'tabedit',
+            \])
+    End
+
+    It returns filtered opener when {arglead} has specified
+      let candidates = session#complete#opener('v', '', [])
+      Assert Equals(candidates, [
+            \ 'vsplit',
+            \])
+    End
+  End
+
+  Describe #session
+    Before all
+      let session_dir_saved = g:session_dir
+      let g:session_dir = tempname()
+      call File.mkdir_nothrow(g:session_dir, 'p')
+      call writefile([], Path.realpath(printf('%s/a.vim', g:session_dir)))
+      call writefile([], Path.realpath(printf('%s/b.vim', g:session_dir)))
+      call writefile([], Path.realpath(printf('%s/c.vim', g:session_dir)))
+      call writefile([], Path.realpath(printf('%s/aa.vim', g:session_dir)))
+      call writefile([], Path.realpath(printf('%s/bb.vim', g:session_dir)))
+      call writefile([], Path.realpath(printf('%s/cc.vim', g:session_dir)))
+    End
+
+    After all
+      call File.rmdir(g:session_dir, 'r')
+      let g:session_dir = session_dir_saved
+    End
+
+    It returns available sessions
+      let candidates = session#complete#session('', '', [])
+      Assert Equals(candidates, [
+            \ 'a',
+            \ 'b',
+            \ 'c',
+            \ 'aa',
+            \ 'bb',
+            \ 'cc',
+            \])
+    End
+
+    It returns filtered sessions when {arglead} has specified
+      let candidates = session#complete#session('b', '', [])
+      Assert Equals(candidates, [
+            \ 'b', 'bb',
+            \])
+    End
+  End
+End

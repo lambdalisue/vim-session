@@ -1,0 +1,47 @@
+sudo: required
+language: generic
+
+services:
+  - docker
+
+git:
+  depth: 3
+
+env:
+  - PROFILE=.profile.vim.latest VIM=vim    TAG=latest
+  - PROFILE=.profile.vim.v8.0.0107 VIM=vim    TAG=v8.0.0107
+  - PROFILE=.profile.neovim.latest VIM=neovim TAG=latest
+  - PROFILE=.profile.neovim.v0.2.0 VIM=neovim TAG=v0.2.0
+  - PROFILE=.profile.neovim.v0.2.2 VIM=neovim TAG=v0.2.2
+
+
+addons:
+  apt:
+    packages:
+      - docker-ce
+      - python3
+      - python3-pip
+
+install:
+  - git clone -q --depth 1 --single-branch https://github.com/vim-jp/vital.vim
+  - pip3 install --user setuptools --upgrade
+  - pip3 install --user vim-vint
+  - pip3 install --user coverage covimerage
+  - docker --version
+
+before_script:
+  - uname -a
+  - python3 --version
+  - vint --version
+  - docker run --rm -it lambdalisue/${VIM}-ci:${TAG} --version
+  - docker run --rm -it lambdalisue/${VIM}-themis:${TAG} --version
+
+script:
+  - vint autoload plugin syntax
+  - docker run --rm --volume ${PWD}:/mnt/volume -e "PROFILE=${PROFILE}" -e "CI=docker" -it lambdalisue/${VIM}-themis:${TAG} --runtimepath /mnt/volume/vital.vim
+  - docker run --rm --volume ${PWD}:/mnt/volume -it lambdalisue/${VIM}-ci:${TAG} --cmd "try | helptags doc/ | catch | cquit | endtry" --cmd quit
+
+after_success:
+  - covimerage write_coverage $PROFILE
+  - coverage xml
+  - bash <(curl -s https://codecov.io/bash)

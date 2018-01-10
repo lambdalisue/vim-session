@@ -1,0 +1,318 @@
+*session.vim*		Simple session management plugin for Vim/Neovim
+
+Version: 0.1.0-dev
+Author:  Alisue <lambdalisue@hashnote.net>
+Support: Vim 8.0000 and above
+Support: Neovim 0.2.0 and above
+License: MIT license
+
+
+=============================================================================
+CONTENTS					*session-contents*
+
+Introduction			|session-introduction|
+Usage				|session-usage|
+Interface			|session-interface|
+  Commands			|session-commands|
+  Functions			|session-functions|
+  Variables			|session-variables|
+Cooperation			|session-cooperation|
+  Denite		|	||session-denite|
+Tips				|session-tips|
+
+
+=============================================================================
+INTRODUCTION					*session-introduction*
+
+Yet another |Session| management plugin for Vim/Neovim.
+
+It provides
+
+1. Command to save a session
+2. Command to open a session
+3. Command to remove a session
+4. Command to list sessions
+5. Command to close a current session
+6. Function to enable autosave on quitting Vim
+7. Cooperation with Shougo/denite.nvim (kind/source)
+
+lambdalisue/session.vim	https://github.com/lambdalisue/session.vim
+Shougo/deoplete.nvim	https://github.com/Shougo/deoplete.nvim
+
+=============================================================================
+USAGE						*session-usage*
+
+Save a session with |:SessionSave| command
+>
+	:SessionSave
+	" Save a current session as a default/current session
+
+	:SessionSave {session}
+	" Save a current session as a given {session} session
+
+	:SessionSave!
+	" Overwrite a current session as a default/current session
+
+	:SessionSave! {session}
+	" Overwrite a current session as a given {session} session
+<
+Open a session with |:SessionOpen| command
+>
+	:SessionOpen
+	" Open a default/current session
+
+	:SessionOpen {session}
+	" Open a given {session} session
+
+	:SessionOpen!
+	" Open a default/current session even non-saved buffers exist
+
+	:SessionOpen! {session}
+	" Open a given {session} session even non-saved buffers exist
+<
+Remove a session with |:SessionRemove| command
+>
+	:SessionRemove
+	" Remove a default/current session
+
+	:SessionRemove {session}
+	" Remove a given {session} session
+<
+Find and manipulate existing sessions with |:SessionList| command
+>
+	:SessionList
+	" Open a session-list window to open/remove existing sessions
+	" Mappings
+	" [n] <Return>  - Open a session under the cursor
+	" [n] g<Return> - Open a session forcedly under the cursor
+	" [n] dd        - Remove a session under the cursor
+	" [v] dd        - Remove sessions in the selection
+
+	:SessionList {opener}
+	" Open a session://list window with a given {opener} (e.g. 'split')
+<
+Close a current session with |:SessionClose| command
+>
+	:SessionClose
+	" Close a current session
+
+	:SessionClose!
+	" Close a current session forcedly even non-saved buffers exist
+<
+Save a session when quiting Vim with |:q|, |:qa|, |:wqa|, |:xa|, or |:quita|
+>
+	:call session#last#enable()
+	" Automatically save a session to "last" when quit
+
+	:call session#last#disable()
+	" Disable autosave
+<
+And with Shougo/deoplete.nvim
+>
+	:Denite session
+	" Actions
+	" open          - SessionOpen on a selected candidate
+	" open_force    - SessionOpen! on a selected candidate
+	" remove        - SessionRemove on a selected candidate
+<
+
+=============================================================================
+INTERFACE					*session-interface*
+
+-----------------------------------------------------------------------------
+COMMANDS					*session-commands*
+
+						*:SessionSave* *:SessionSave!*
+:SessionSave[!] [{session}]
+	Save views of all windows and global settings into a given
+	{session} by |:mksession| command.
+
+	When no {session} is given, one of the following will be used.
+
+	1. |g:session#default_session| if no session has loaded yet
+	2. Base name of |v:this_session| if any session has loaded
+
+	The {session} will be saved into a directory given by
+	|g:session_dir| variable.
+
+	Without a bang (!), it fails when the corresponding file of the
+	given {session} exist. Use ":SessionSave!" to overwrite it forcedly.
+
+						*:SessionOpen* *:SessionOpen!*
+:SessionOpen[!] [{session}]
+	Open a given {session} to restore the previous views and settings
+	by |:source| command.
+
+	When no {session} is given, one of the following will be used.
+
+	1. |g:session#default_session| if no session has loaded yet
+	2. Base name of |v:this_session| if any session has loaded
+
+	The {session} will be loaded from a directory given by
+	|g:session_dir| variable.
+
+	Without a bang (!), it fails when un-saved buffers exist.
+	Use ":SessionOpen!" to discard un-saved changes and open the
+	session forcedly.
+
+						*:SessionRemove*
+:SessionRemove [{session}]
+	Remove a corresponding file of a given {session}.
+
+	When no {session} is given, one of the following will be used.
+
+	1. |g:session#default_session| if no session has loaded yet
+	2. Base name of |v:this_session| if any session has loaded
+
+	The {session} will be searched from a directory given by
+	|g:session_dir| variable.
+
+						*:SessionList*
+:SessionList [{opener}]
+	Open a "session://list" buffer with a given {opener} to find and
+	manipulate existing sessions.
+
+	The followings are assumed as a correct value of the {opener}
+
+	new	vnew	enew	edit	split	vsplit
+	tabnew	tabedit	pedit
+
+	When no {opener} is given, |g:session#default_opener| will be used.
+
+	The following mappings are available in "session://list" buffer
+
+	Mode	Mapping		Description~
+	n	<Return>	|:SessionOpen| on a cursor session
+	n	g<Return>	|:SessionOpen!|| on a cursor session
+	n	dd		|:SessionRemove|| on a cursor session
+	v	dd		|:SessionRemove|| on sessions in a selection
+
+	And the following <Plug> mappings
+
+	Modes	Plug mapping			Command~
+	n	<Plug>(session-open)		||:SessionOpen| 
+	n	<Plug>(session-open-force)	||:SessionOpen!|
+	n/v	<Plug>(session-remove)		||:SessionRemove|
+
+						*:SessionClose*
+:SessionClose
+	Close a current session and discard all windows/buffers.
+	It does nothing when no session has loaded.
+
+	Without a bang (!), it fails when un-saved buffers exist.
+	Use ":SessionClose!" to discard un-saved changes and close the
+	session forcedly.
+ 
+-----------------------------------------------------------------------------
+FUNCTIONS					*session-functions*
+
+					*session#last#enable()*
+session#last#enable()
+	Enable autosave when quitting Vim by |:q|, |:qa|, |:wqa|, |:xa|, or
+	|:quita| command.
+	It overrides a session given by |g:session#last#session|.
+
+					*session#last#disable()*
+session#last#disable()
+	Disable autosave when quitting Vim by |:q|, |:qa|, |:wqa|, |:xa|, or
+	|:quita| command.
+
+-----------------------------------------------------------------------------
+VARIABLES					*session-variables*
+
+					*g:session_dir*
+g:session_dir
+	A directory path for searching a corresponding session file.
+	This plugin automatically create the parent directory in
+	|:SessionSave| command if missing.
+
+	The default value is
+
+		Vim			Neovim~
+	Unix:	~/.vim/session		~/.local/share/nvim/session
+	Win:	~/vimfiles/session	~/AppData/Local/nvim-data/session
+
+					*g:session#default_opener*
+g:session#default_opener
+	An opener string (e.g. "edit") used when no {opener} is given to
+	|:SessionList| command.
+
+	The default value is "edit"
+
+					*g:session#default_session*
+g:session#default_session
+	A default session name used in several commands when no {session} is
+	given and no session has loaded.
+
+	The default value is "default"
+
+					*g:session#last#session*
+g:session#last#session
+	A default session name used for autosave enabled by
+	|session#last#enable()| function.
+
+	The default value is "last"
+
+
+=============================================================================
+COOPERATION					*session-cooperation*
+
+-----------------------------------------------------------------------------
+DENITE						*session-denite*
+
+It provides kind and source for Shougo/denite.nvim.
+
+					*session-denite-source-session*
+session		Gather sessions managed with this plugin.
+
+			action__session_name	(String)	(Required)
+				A session name
+			action__session_active	(Boolean)	(Required)
+				If the session is loaded or not
+
+					*session-denite-kind-session*
+session		An interface to manage session.
+
+					*session-denite-kind-session-actions*
+			open (default)
+				Open the session
+			open_force
+				Open the session even un-saved buffers exist
+			remove
+				Remove the session
+
+https://github.com/Shougo/denite.nvim
+
+
+=============================================================================
+TIPS						*session-tips*
+
+Q1.
+How to save sessions asynchronously and periodically?
+
+A1.
+Use |timer_start()|function to execute |:SessionSave!| or |:SessionSave| with
+sequential session names
+>
+	let timer1 = timer_start(
+	      \ 1000 * 60 * 10,
+	      \ { -> execute('SessionSave!', '') },
+	      \ { 'repeat': -1 },
+	      \)
+
+	let timer2 = timer_start(
+	      \ 1000 * 60 * 10,
+	      \ { -> execute('SessionSave s.' strftime('%y%m%d%H%M%S'), '') },
+	      \ { 'repeat': -1 },
+	      \)
+
+Q2.
+|:SessionSave| is slow. Can I run it asynchronously?
+
+A2.
+Unfortunately not. This plugin uses |mksession| command internally and that
+command must be executed in the Vim's live session.
+
+
+=============================================================================
+vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl
