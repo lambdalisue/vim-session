@@ -37,7 +37,7 @@ It provides
 7. Cooperation with Shougo/denite.nvim (kind/source)
 
 lambdalisue/session.vim	https://github.com/lambdalisue/session.vim
-Shougo/deoplete.nvim	https://github.com/Shougo/deoplete.nvim
+Shougo/denite.nvim	https://github.com/Shougo/denite.nvim
 
 =============================================================================
 USAGE						*session-usage*
@@ -107,7 +107,7 @@ Save a session when quiting Vim with |:q|, |:qa|, |:wqa|, |:xa|, or |:quita|
 	:call session#last#disable()
 	" Disable autosave
 <
-And with Shougo/deoplete.nvim
+And with Shougo/denite.nvim
 >
 	:Denite session
 	" Actions
